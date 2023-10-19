@@ -1,5 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {AlertController} from "@ionic/angular";
+import {Task} from "../../services/sqlite/tasks/models/task";
+import {TasksService} from "../../services/sqlite/tasks/tasks.service";
 
 @Component({
   selector: 'app-tasks',
@@ -8,12 +10,19 @@ import {AlertController} from "@ionic/angular";
 })
 export class TasksPage implements OnInit {
 
-  tasks: any[] = [];
+  tasks: Task[] = [];
 
-  constructor(private alertController: AlertController) {
+  constructor(private alertController: AlertController, private tasksService: TasksService) {
   }
 
   ngOnInit() {
+    this.loadTasks();
+  }
+
+  loadTasks() {
+    this.tasksService.getAll().then((tasks) => {
+      this.tasks = tasks;
+    })
   }
 
   async presentTaskForm() {
@@ -29,6 +38,8 @@ export class TasksPage implements OnInit {
           role: 'confirm',
           handler: (alertData) => {
             if (alertData.title && alertData.description) {
+              this.tasksService.insert(alertData.title, alertData.description);
+              this.loadTasks();
               return true;
             } else {
               return false;
